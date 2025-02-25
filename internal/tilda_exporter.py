@@ -59,7 +59,7 @@ class TildaExporter:
         for asset_dict in assets:
             try:
                 source_url = asset_dict['from']
-                local_path = Path(self.config.local_path_prefix) / Path(asset_dict['to'])
+                local_path = self.config.get_path(asset_type) / Path(asset_dict['to']).name
                 local_path.parent.mkdir(parents=True, exist_ok=True)
                 self._save_file(source_url, local_path)
             except Exception as e:
@@ -122,11 +122,11 @@ class TildaExporter:
             
             # Обрабатываем ассеты
             self._process_assets(result['images'], 'images')
-            self._process_assets(result['js'], 'scripts')
-            self._process_assets(result['css'], 'styles')
+            self._process_assets(result['js'], 'js')
+            self._process_assets(result['css'], 'css')
 
             # Сохраняем HTML
-            html_path = Path(self.config.local_path_prefix) / result['filename']
+            html_path = self.config.get_path('html') / result['filename']
             html_path.parent.mkdir(parents=True, exist_ok=True)
             html_path.write_text(result['html'], encoding='utf-8')
             
@@ -134,4 +134,4 @@ class TildaExporter:
             
         except Exception as e:
             logger.error(f"Ошибка экспорта страницы {page.id}: {e}")
-            raise 
+            raise
