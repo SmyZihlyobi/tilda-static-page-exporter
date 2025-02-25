@@ -77,4 +77,5 @@ def handle_webhook():
 
 if __name__ == '__main__':
     import sys
-    extract_project(sys.argv[1])
+    #extract_project(sys.argv[1])
+    extract_project(12325157)
