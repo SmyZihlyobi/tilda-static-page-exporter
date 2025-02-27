@@ -7,6 +7,7 @@ import uvicorn
 from fastapi import FastAPI, Query, HTTPException, Request, BackgroundTasks
 from fastapi.responses import PlainTextResponse
 
+from committer import Committer
 from internal.config import TildaConfig
 from internal.tilda_exporter import TildaExporter
 
@@ -45,6 +46,15 @@ async def process_webhook_data(projectid: str, pageid: Optional[str], published:
         logger.info(f"Фоновая обработка webhook завершена успешно")
     except Exception as e:
         logger.error(f"Ошибка при фоновой обработке webhook: {e}", exc_info=True)
+
+async def export_project():
+    try:
+        logger.info(f"Начало экспорта файлов")
+        committer = Committer(config)
+        committer.commit_changes()
+        logger.info(f"Экспорт завершен успешно")
+    except Exception as e:
+        logger.error(f"Ошибка при экспорте файлов: {e}", exc_info=True)
 
 @app.get("/webhook", response_class=PlainTextResponse)
 async def handle_webhook(
