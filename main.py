@@ -7,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI, Query, HTTPException, Request, BackgroundTasks
 from fastapi.responses import PlainTextResponse
 
-from committer import Committer
+from internal.committer import Committer
 from internal.config import TildaConfig
 from internal.tilda_exporter import TildaExporter
 
@@ -43,6 +43,13 @@ async def process_webhook_data(projectid: str, pageid: Optional[str], published:
         logger.info(f"  JS: {config.get_path('js')}")
         
         await exporter.extract_project(projectid)
+        
+        # Создаем коммит с текущей датой
+        current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        commit_message = f"Автоматическое обновление от Tilda {current_date}"
+        committer = Committer(config)
+        committer.commit_changes(commit_message)
+        
         logger.info(f"Фоновая обработка webhook завершена успешно")
     except Exception as e:
         logger.error(f"Ошибка при фоновой обработке webhook: {e}", exc_info=True)
