@@ -17,13 +17,18 @@ class TildaConfig:
         self.port = int(os.environ.get('TILDA_PORT', 8000))
         
         # Базовые пути
-        base_path = os.environ.get('TILDA_STATIC_PATH_PREFIX', 'static/')
+        self.base_path = os.environ.get('TILDA_STATIC_PATH_PREFIX', 'static/')
         self.paths = {
-            'html': Path(os.environ.get('TILDA_HTML_PATH', base_path)),
-            'images': Path(os.environ.get('TILDA_IMAGES_PATH', base_path + 'images/')),
-            'css': Path(os.environ.get('TILDA_CSS_PATH', base_path + 'css/')),
-            'js': Path(os.environ.get('TILDA_JS_PATH', base_path + 'js/'))
+            'html': Path(os.environ.get('TILDA_HTML_PATH', self.base_path)),
+            'images': Path(os.environ.get('TILDA_IMAGES_PATH', self.base_path + 'images/')),
+            'css': Path(os.environ.get('TILDA_CSS_PATH', self.base_path + 'css/')),
+            'js': Path(os.environ.get('TILDA_JS_PATH', self.base_path + 'js/'))
         }
+
+        # Данные удаленного репозиторий
+        self.git_username = os.environ.get('GIT_USERNAME')
+        self.git_password = os.environ.get('GIT_PASSWORD')
+        self.git_remote_url = os.environ.get('GIT_REMOTE_URL')
         
     @property
     def is_valid(self) -> bool:
