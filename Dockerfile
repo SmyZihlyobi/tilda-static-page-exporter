@@ -11,7 +11,9 @@ COPY requirements.txt ./
 RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
     pip install --trusted-host pypi.python.org -r requirements.txt
 
-COPY app.py ./
+# Copy all necessary application files
+COPY main.py ./
+COPY internal ./internal/
 
 # Expose port 5000 for the Flask application
 EXPOSE 5000
@@ -23,4 +25,4 @@ ENV LOCAL_PATH_PREFIX=<your-local-path-prefix>
 
 # Start the Gunicorn server
 # Timeout argument is required due to the post-response 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--timeout=90"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "main:app", "--timeout=90"]
