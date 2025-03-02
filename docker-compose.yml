@@ -24,9 +24,6 @@ services:
       - GIT_REMOTE_URL=${GIT_REMOTE_URL}
       - GIT_CONFIG_NAME="Tilda Exporter"
       - GIT_CONFIG_EMAIL="tilda-exporter@example.com"
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     networks:
       - tilda-network
     restart: unless-stopped
