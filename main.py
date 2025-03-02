@@ -44,11 +44,15 @@ async def process_webhook_data(projectid: str, pageid: Optional[str], published:
         
         await exporter.extract_project(projectid)
         
-        # Создаем коммит с текущей датой
-        current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        commit_message = f"Автоматическое обновление от Tilda {current_date}"
-        committer = Committer(config)
-        committer.commit_changes(commit_message)
+        # Создаем коммит только если включен push_to_git
+        if config.push_to_git:
+            current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            commit_message = f"Автоматическое обновление от Tilda {current_date}"
+            committer = Committer(config)
+            committer.commit_changes(commit_message)
+            logger.info("Git push выполнен успешно")
+        else:
+            logger.info("Git push пропущен (PUSH_TO_GIT=false)")
         
         logger.info(f"Фоновая обработка webhook завершена успешно")
     except Exception as e:
@@ -57,8 +61,12 @@ async def process_webhook_data(projectid: str, pageid: Optional[str], published:
 async def export_project():
     try:
         logger.info(f"Начало экспорта файлов")
-        committer = Committer(config)
-        committer.commit_changes()
+        if config.push_to_git:
+            committer = Committer(config)
+            committer.commit_changes()
+            logger.info("Git push выполнен успешно")
+        else:
+            logger.info("Git push пропущен (PUSH_TO_GIT=false)")
         logger.info(f"Экспорт завершен успешно")
     except Exception as e:
         logger.error(f"Ошибка при экспорте файлов: {e}", exc_info=True)

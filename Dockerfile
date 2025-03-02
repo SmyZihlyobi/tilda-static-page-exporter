@@ -1,41 +1,21 @@
-# Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Установка git и сетевых утилит
-RUN apt-get update && \
-    apt-get install -y \
-    git \
-    iputils-ping \
-    dnsutils \
+# Установка необходимых системных пакетов
+RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Настройка DNS
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+# Создание базовой директории для работы приложения
+RUN mkdir -p /app
 
-# Set the working directory to /app
 WORKDIR /app
 
-# Copy only the necessary files into the container at /app
-COPY requirements.txt ./
-
-# Install dependencies
+# Установка необходимых зависимостей
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all necessary application files
+# Копирование исходного кода
 COPY . .
 
-# Create directory for static files
-RUN mkdir -p static
-
-# Expose port 8000 for the Flask application
-EXPOSE 8000
-
-# Проверка сети перед запуском
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f https://static.tildacdn.com || exit 1
-
 # Запуск приложения
-CMD ["python", "main.py"]
-
+CMD ["python", "main.py"] 

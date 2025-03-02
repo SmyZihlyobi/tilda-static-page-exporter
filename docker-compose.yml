@@ -3,30 +3,31 @@ version: '3.8'
 services:
   tilda-exporter:
     build: .
-    ports:
-      - "${TILDA_PORT:-8000}:8000"
-    volumes:
-      - ./static:/app/static
-    environment:
-      - TILDA_PUBLIC_KEY=${TILDA_PUBLIC_KEY}
-      - TILDA_SECRET_KEY=${TILDA_SECRET_KEY}
-      - TILDA_PROJECT_ID=${TILDA_PROJECT_ID}
-      - TILDA_HOST=0.0.0.0
-      - TILDA_PORT=8000
-      - TILDA_STATIC_PATH_PREFIX=static/
-      - TILDA_HTML_PATH=static/
-      - TILDA_IMAGES_PATH=static/images/
-      - TILDA_CSS_PATH=static/css/
-      - TILDA_JS_PATH=static/js/
-      - GIT_USERNAME=${GIT_USERNAME}
-      - GIT_PASSWORD=${GIT_TOKEN}
-      - GIT_REMOTE_URL=${GIT_REMOTE_URL}
+    env_file:
+      - .env
     dns:
       - 8.8.8.8
       - 8.8.4.4
     networks:
       - tilda-network
+    ports:
+      - "${TILDA_PORT}:${TILDA_PORT}"
+    volumes:
+      # Монтирование директорий для статических файлов
+      - ${TILDA_STATIC_PATH_PREFIX}:/${TILDA_STATIC_PATH_PREFIX}
+      - ${TILDA_HTML_PATH}:/${TILDA_HTML_PATH}
+      - ${TILDA_IMAGES_PATH}:/${TILDA_IMAGES_PATH}
+      - ${TILDA_CSS_PATH}:/${TILDA_CSS_PATH}
+      - ${TILDA_JS_PATH}:/${TILDA_JS_PATH}
+      # Если включен Git, монтируем .git директорию
+      - .git:/app/.git:rw
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://static.tildacdn.com"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 networks:
   tilda-network:
