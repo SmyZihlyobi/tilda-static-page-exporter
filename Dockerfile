@@ -10,6 +10,12 @@ RUN apt-get update && \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Настройка Git
+RUN git config --system user.name "Tilda Exporter" && \
+    git config --system user.email "tilda-exporter@example.com" && \
+    git config --system core.autocrlf false && \
+    git config --system safe.directory '*'
+
 # Настройка DNS
 RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
     echo "nameserver 8.8.4.4" >> /etc/resolv.conf
@@ -26,8 +32,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all necessary application files
 COPY . .
 
-# Create directory for static files
-RUN mkdir -p static
+# Create directory for static files and initialize git
+RUN mkdir -p static && \
+    cd static && \
+    git init && \
+    git config --local user.name "Tilda Exporter" && \
+    git config --local user.email "tilda-exporter@example.com"
 
 # Expose port 8000 for the Flask application
 EXPOSE 8000

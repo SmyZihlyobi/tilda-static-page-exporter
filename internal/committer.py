@@ -69,10 +69,20 @@ class Committer:
 
     def _init_repository(self):
         """Инициализирует репозиторий если он отсутствует"""
-        git_dir = self.repo_path / ".git"
-        if not git_dir.exists():
-            logger.info(f"Initializing new Git repository in {self.repo_path}")
-            self._run_git_command("init")
+        try:
+            git_dir = self.repo_path / ".git"
+            if not git_dir.exists():
+                logger.info(f"Initializing new Git repository in {self.repo_path}")
+                self._run_git_command("init")
+                # Настраиваем локальные параметры Git
+                self._run_git_command("config", "user.name", "Tilda Exporter")
+                self._run_git_command("config", "user.email", "tilda-exporter@example.com")
+                # Создаем начальный коммит
+                self._run_git_command("add", "-A")
+                self._run_git_command("commit", "-m", "Initial commit", "--allow-empty")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Ошибка при инициализации репозитория: {e.stderr}")
+            raise
 
     def commit_changes(self, message: str = "Auto-commit from Tilda exporter"):
         """Выполняет полный цикл коммита и пуша"""
@@ -82,7 +92,7 @@ class Committer:
             self._git_push()
             logger.info(f"Successfully committed changes to {self.repo_path}")
         except subprocess.CalledProcessError as e:
-            logger.error(f"Git operation failed: {e.stderr.decode()}")
+            logger.error(f"Git operation failed: {e.stderr}")
             raise RuntimeError("Git command failed") from e
 
     def _git_add(self):
@@ -91,24 +101,33 @@ class Committer:
 
     def _git_commit(self, message: str):
         """Создает коммит с указанным сообщением"""
-        self._run_git_command("commit", "-m", message, "--allow-empty")
+        try:
+            self._run_git_command("commit", "-m", message, "--allow-empty")
+        except subprocess.CalledProcessError as e:
+            if b"nothing to commit" not in e.stderr:
+                raise
 
     def _git_push(self):
         """Отправляет изменения в удаленный репозиторий"""
-        self._run_git_command("push", "export", "HEAD")
+        self._run_git_command("push", "-u", "export", "HEAD")
 
     def _run_git_command(self, *args):
         """Универсальный метод выполнения Git команд"""
         cmd = ["git", "-C", str(self.repo_path.absolute()), *args]
-        result = subprocess.run(
-            cmd,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        logger.debug(f"Executed: {' '.join(cmd)}")
-        logger.debug(f"Output: {result.stdout.decode()}")
-        return result
+        try:
+            result = subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            logger.debug(f"Executed: {' '.join(cmd)}")
+            logger.debug(f"Output: {result.stdout}")
+            return result
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Git command failed: {e.stderr}")
+            raise
 
 
 #cfg = TildaConfig()

@@ -21,6 +21,8 @@ services:
       - GIT_USERNAME=${GIT_USERNAME}
       - GIT_PASSWORD=${GIT_TOKEN}
       - GIT_REMOTE_URL=${GIT_REMOTE_URL}
+      - GIT_CONFIG_NAME="Tilda Exporter"
+      - GIT_CONFIG_EMAIL="tilda-exporter@example.com"
     dns:
       - 8.8.8.8
       - 8.8.4.4
