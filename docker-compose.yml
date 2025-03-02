@@ -5,6 +5,11 @@ services:
     build: .
     env_file:
       - .env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - tilda-network
     ports:
       - "${TILDA_PORT}:${TILDA_PORT}"
     volumes:
@@ -16,4 +21,14 @@ services:
       - ${TILDA_JS_PATH}:/${TILDA_JS_PATH}
       # Если включен Git, монтируем .git директорию
       - .git:/app/.git:rw
-    restart: unless-stopped 
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://static.tildacdn.com"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  tilda-network:
+    driver: bridge
