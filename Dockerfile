@@ -1,8 +1,18 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Установка git
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+# Установка git и сетевых утилит
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    iputils-ping \
+    dnsutils \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Настройка DNS
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
 # Set the working directory to /app
 WORKDIR /app
@@ -22,6 +32,10 @@ RUN mkdir -p static
 # Expose port 8000 for the Flask application
 EXPOSE 8000
 
-# Запуск через Python
+# Проверка сети перед запуском
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f https://static.tildacdn.com || exit 1
+
+# Запуск приложения
 CMD ["python", "main.py"]
 

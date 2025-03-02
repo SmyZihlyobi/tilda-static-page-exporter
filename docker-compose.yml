@@ -21,4 +21,13 @@ services:
       - GIT_USERNAME=${GIT_USERNAME}
       - GIT_PASSWORD=${GIT_TOKEN}
       - GIT_REMOTE_URL=${GIT_REMOTE_URL}
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - tilda-network
     restart: unless-stopped
+
+networks:
+  tilda-network:
+    driver: bridge
