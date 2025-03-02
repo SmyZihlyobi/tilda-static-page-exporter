@@ -25,7 +25,8 @@ class TildaConfig:
             'js': Path(os.environ.get('TILDA_JS_PATH', self.base_path + 'js/'))
         }
 
-        # Данные удаленного репозиторий
+        # Настройки Git
+        self.push_to_git = os.environ.get('PUSH_TO_GIT', 'false').lower() == 'true'
         self.git_username = os.environ.get('GIT_USERNAME')
         self.git_password = os.environ.get('GIT_PASSWORD')
         self.git_remote_url = os.environ.get('GIT_REMOTE_URL')
