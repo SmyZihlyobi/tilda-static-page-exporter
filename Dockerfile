@@ -11,8 +11,11 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Настройка Git
-RUN git config --system user.name "Tilda Exporter" && \
-    git config --system user.email "tilda-exporter@example.com" && \
+ARG GIT_CONFIG_NAME="Tilda Exporter"
+ARG GIT_CONFIG_EMAIL="tilda-exporter@example.com"
+
+RUN git config --system user.name "${GIT_CONFIG_NAME}" && \
+    git config --system user.email "${GIT_CONFIG_EMAIL}" && \
     git config --system core.autocrlf false && \
     git config --system safe.directory '*'
 
@@ -32,8 +35,8 @@ COPY . .
 RUN mkdir -p static && \
     cd static && \
     git init && \
-    git config --local user.name "Tilda Exporter" && \
-    git config --local user.email "tilda-exporter@example.com"
+    git config --local user.name "${GIT_CONFIG_NAME}" && \
+    git config --local user.email "${GIT_CONFIG_EMAIL}"
 
 # Expose port 8000 for the Flask application
 EXPOSE 8000
