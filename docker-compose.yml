@@ -3,31 +3,17 @@ version: '3.8'
 services:
   tilda-exporter:
     build: .
+    env_file:
+      - .env
     ports:
-      - "${TILDA_PORT:-8000}:8000"
+      - "${TILDA_PORT}:${TILDA_PORT}"
     volumes:
-      - ./static:/app/static
-    environment:
-      - TILDA_PUBLIC_KEY=${TILDA_PUBLIC_KEY}
-      - TILDA_SECRET_KEY=${TILDA_SECRET_KEY}
-      - TILDA_PROJECT_ID=${TILDA_PROJECT_ID}
-      - TILDA_HOST=${TILDA_HOST:-0.0.0.0}
-      - TILDA_PORT=${TILDA_PORT:-8000}
-      - TILDA_STATIC_PATH_PREFIX=${TILDA_STATIC_PATH_PREFIX:-static/}
-      - TILDA_HTML_PATH=${TILDA_HTML_PATH:-static/}
-      - TILDA_IMAGES_PATH=${TILDA_IMAGES_PATH:-static/images/}
-      - TILDA_CSS_PATH=${TILDA_CSS_PATH:-static/css/}
-      - TILDA_JS_PATH=${TILDA_JS_PATH:-static/js/}
-      - PUSH_TO_GIT=${PUSH_TO_GIT:-false}
-      - GIT_USERNAME=${GIT_USERNAME}
-      - GIT_PASSWORD=${GIT_TOKEN}
-      - GIT_REMOTE_URL=${GIT_REMOTE_URL}
-      - GIT_CONFIG_NAME=${GIT_CONFIG_NAME:-"Tilda Exporter"}
-      - GIT_CONFIG_EMAIL=${GIT_CONFIG_EMAIL:-"tilda-exporter@example.com"}
-    networks:
-      - tilda-network
-    restart: unless-stopped
-
-networks:
-  tilda-network:
-    driver: bridge
+      # Монтирование директорий для статических файлов
+      - ${TILDA_STATIC_PATH_PREFIX}:/${TILDA_STATIC_PATH_PREFIX}
+      - ${TILDA_HTML_PATH}:/${TILDA_HTML_PATH}
+      - ${TILDA_IMAGES_PATH}:/${TILDA_IMAGES_PATH}
+      - ${TILDA_CSS_PATH}:/${TILDA_CSS_PATH}
+      - ${TILDA_JS_PATH}:/${TILDA_JS_PATH}
+      # Если включен Git, монтируем .git директорию
+      - .git:/app/.git:rw
+    restart: unless-stopped 
