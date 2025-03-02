@@ -16,10 +16,6 @@ RUN git config --system user.name "Tilda Exporter" && \
     git config --system core.autocrlf false && \
     git config --system safe.directory '*'
 
-# Настройка DNS
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-
 # Set the working directory to /app
 WORKDIR /app
 
