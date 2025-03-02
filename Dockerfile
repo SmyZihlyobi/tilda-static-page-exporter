@@ -10,13 +10,11 @@ WORKDIR /app
 # Copy only the necessary files into the container at /app
 COPY requirements.txt ./
 
-# Enable BuildKit caches for pip packages
-RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
-    pip install --trusted-host pypi.python.org --no-cache-dir -r requirements.txt
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all necessary application files
-COPY main.py ./
-COPY internal ./internal/
+COPY . .
 
 # Create directory for static files
 RUN mkdir -p static
@@ -26,9 +24,4 @@ EXPOSE 8000
 
 # Запуск через Python
 CMD ["python", "main.py"]
-
-# Set environment variables
-ENV TILDA_PUBLIC_KEY=<your-tilda-public-key>
-ENV TILDA_SECRET_KEY=<your-tilda-secret-key>
-ENV LOCAL_PATH_PREFIX=<your-local-path-prefix>
 
