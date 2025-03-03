@@ -6,6 +6,7 @@ from typing import Optional
 import uvicorn
 from fastapi import FastAPI, Query, HTTPException, Request, BackgroundTasks
 from fastapi.responses import PlainTextResponse
+from contextlib import asynccontextmanager
 
 from internal.committer import Committer
 from internal.config import TildaConfig
@@ -18,11 +19,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Действия при запуске и завершении работы сервера"""
+    # Код выполняемый при запуске
+    logger.info(f"Запуск сервера на {config.host}:{config.port}")
+    logger.info(f"Конфигурация загружена для проекта {config.project_id}")
+    try:
+        logger.info("Выполняем начальный экспорт проекта")
+        await exporter.extract_project(config.project_id)
+        logger.info("Начальный экспорт завершен успешно")
+    except Exception as e:
+        logger.error(f"Ошибка при начальном экспорте: {e}", exc_info=True)
+        raise
+    
+    yield  # Здесь приложение работает
+    
+    # Код выполняемый при завершении работы
+    logger.info("Завершение работы сервера")
+
 # Инициализация
 app = FastAPI(
     title="Tilda Static Page Exporter",
     description="API для экспорта статических страниц из Tilda",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 config = TildaConfig()
@@ -93,19 +114,6 @@ async def handle_webhook(
     background_tasks.add_task(process_webhook_data, projectid, pageid, published)
     logger.info(f"Webhook запрос принят в обработку")
     return "ok"
-
-@app.on_event("startup")
-async def startup_event():
-    """Действия при запуске сервера"""
-    logger.info(f"Запуск сервера на {config.host}:{config.port}")
-    logger.info(f"Конфигурация загружена для проекта {config.project_id}")
-    try:
-        logger.info("Выполняем начальный экспорт проекта")
-        await exporter.extract_project(config.project_id)
-        logger.info("Начальный экспорт завершен успешно")
-    except Exception as e:
-        logger.error(f"Ошибка при начальном экспорте: {e}", exc_info=True)
-        raise
 
 if __name__ == '__main__':
     uvicorn.run(app, host=config.host, port=config.port)
