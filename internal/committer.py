@@ -71,14 +71,24 @@ class Committer:
     def _init_repository(self):
         """Инициализирует репозиторий если он отсутствует"""
         try:
+            # Сначала настраиваем глобальные параметры Git
+            self._run_git_command("config", "--global", "user.name", self.config.git_config_name)
+            self._run_git_command("config", "--global", "user.email", self.config.git_config_email)
+            
             git_dir = self.repo_path / ".git"
             if not git_dir.exists():
                 logger.info(f"Initializing new Git repository in {self.repo_path}")
                 self._run_git_command("init")
-                # Настраиваем локальные параметры Git
-                self._run_git_command("config", "user.name", self.config.git_config_name)
-                self._run_git_command("config", "user.email", self.config.git_config_email)
-                # Создаем начальный коммит
+            
+            # Настраиваем локальные параметры Git для репозитория
+            self._run_git_command("config", "user.name", self.config.git_config_name)
+            self._run_git_command("config", "user.email", self.config.git_config_email)
+            
+            # Проверяем, есть ли уже коммиты
+            try:
+                self._run_git_command("rev-parse", "HEAD")
+            except subprocess.CalledProcessError:
+                # Если коммитов нет, создаем начальный коммит
                 self._run_git_command("add", "-A")
                 self._run_git_command("commit", "-m", "Initial commit", "--allow-empty")
         except subprocess.CalledProcessError as e:
