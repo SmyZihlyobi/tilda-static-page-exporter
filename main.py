@@ -27,6 +27,11 @@ async def lifespan(app: FastAPI):
     logger.info(f"Конфигурация загружена для проекта {config.project_id}")
     try:
         logger.info("Выполняем начальный экспорт проекта")
+        logger.info("Пути сохранения файлов:")
+        logger.info(f"  HTML: {config.get_path('html')}")
+        logger.info(f"  Images: {config.get_path('images')}")
+        logger.info(f"  CSS: {config.get_path('css')}")
+        logger.info(f"  JS: {config.get_path('js')}")
         await exporter.extract_project(config.project_id)
         logger.info("Начальный экспорт завершен успешно")
         
