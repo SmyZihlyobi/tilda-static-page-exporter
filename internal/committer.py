@@ -2,6 +2,7 @@ import logging
 import subprocess
 from pathlib import Path
 from internal.config import TildaConfig
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -87,8 +88,12 @@ class Committer:
     def commit_changes(self, message: str = "Auto-commit from Tilda exporter"):
         """Выполняет полный цикл коммита и пуша"""
         try:
+            # Добавляем текущую дату и время к сообщению коммита
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            commit_message = f"{message} [{timestamp}]"
+            
             self._git_add()
-            self._git_commit(message)
+            self._git_commit(commit_message)
             self._git_push()
             logger.info(f"Successfully committed changes to {self.repo_path}")
         except subprocess.CalledProcessError as e:
