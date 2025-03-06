@@ -1,26 +1,22 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim-buster
+FROM python:3.11-slim
 
-# Set the working directory to /app
+# Установка необходимых системных пакетов
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создание базовой директории для работы приложения
+RUN mkdir -p /app
+
 WORKDIR /app
 
-# Copy only the necessary files into the container at /app
-COPY requirements.txt ./
+# Установка необходимых зависимостей
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Enable BuildKit caches for pip packages
-RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
-    pip install --trusted-host pypi.python.org -r requirements.txt
+# Копирование исходного кода
+COPY . .
 
-COPY app.py ./
-
-# Expose port 5000 for the Flask application
-EXPOSE 5000
-
-# Set environment variables
-ENV TILDA_PUBLIC_KEY=<your-tilda-public-key>
-ENV TILDA_SECRET_KEY=<your-tilda-secret-key>
-ENV LOCAL_PATH_PREFIX=<your-local-path-prefix>
-
-# Start the Gunicorn server
-# Timeout argument is required due to the post-response 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--timeout=90"]
+# Запуск приложения
+CMD ["python", "main.py"] 

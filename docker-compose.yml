@@ -1,14 +1,37 @@
-version: '3'
-
 services:
   tilda-exporter:
     build: .
-    image: "fallenchromium/tilda-static-pages-exporter"
-    environment:
-      TILDA_PUBLIC_KEY: ${TILDA_PUBLIC_KEY}
-      TILDA_SECRET_KEY: ${TILDA_SECRET_KEY}
-      TILDA_STATIC_PATH_PREFIX: /static/
+    env_file:
+      - .env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - tilda-network
     ports:
-      - "${TILDA_BIND_PORT:-5000}:5000"
+      - "${TILDA_PORT}:${TILDA_PORT}"
     volumes:
-      - ./static/:/static/
+      # Монтируем директории для статических файлов с правильными путями
+      - ./${TILDA_HTML_PATH}:/app/${TILDA_HTML_PATH}
+      - ./${TILDA_IMAGES_PATH}:/app/${TILDA_IMAGES_PATH}
+      - ./${TILDA_CSS_PATH}:/app/${TILDA_CSS_PATH}
+      - ./${TILDA_JS_PATH}:/app/${TILDA_JS_PATH}
+      # Если включен Git, монтируем .git директорию
+      - .git:/app/.git:rw
+    environment:
+      - GIT_CONFIG_NAME=${GIT_CONFIG_NAME}
+      - GIT_CONFIG_EMAIL=${GIT_CONFIG_EMAIL}
+      # Добавляем глобальную конфигурацию Git
+      - GIT_GLOBAL_CONFIG_NAME=${GIT_CONFIG_NAME}
+      - GIT_GLOBAL_CONFIG_EMAIL=${GIT_CONFIG_EMAIL}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://static.tildacdn.com"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  tilda-network:
+    driver: bridge
