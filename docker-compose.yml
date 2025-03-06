@@ -5,6 +5,9 @@ services:
     build: .
     env_file:
       - .env
+    environment:
+      - GIT_CONFIG_NAME=${GIT_CONFIG_NAME:-Tilda Exporter}
+      - GIT_CONFIG_EMAIL=${GIT_CONFIG_EMAIL:-tilda-exporter@example.com}
     dns:
       - 8.8.8.8
       - 8.8.4.4

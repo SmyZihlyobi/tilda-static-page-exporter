@@ -30,6 +30,8 @@ class TildaConfig:
         self.git_username = os.environ.get('GIT_USERNAME')
         self.git_password = os.environ.get('GIT_PASSWORD')
         self.git_remote_url = os.environ.get('GIT_REMOTE_URL')
+        self.git_config_name = os.environ.get('GIT_CONFIG_NAME', 'Tilda Exporter')
+        self.git_config_email = os.environ.get('GIT_CONFIG_EMAIL', 'tilda-exporter@example.com')
         
     @property
     def is_valid(self) -> bool:

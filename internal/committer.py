@@ -75,8 +75,8 @@ class Committer:
                 logger.info(f"Initializing new Git repository in {self.repo_path}")
                 self._run_git_command("init")
                 # Настраиваем локальные параметры Git
-                self._run_git_command("config", "user.name", "Tilda Exporter")
-                self._run_git_command("config", "user.email", "tilda-exporter@example.com")
+                self._run_git_command("config", "user.name", self.config.git_config_name)
+                self._run_git_command("config", "user.email", self.config.git_config_email)
                 # Создаем начальный коммит
                 self._run_git_command("add", "-A")
                 self._run_git_command("commit", "-m", "Initial commit", "--allow-empty")
