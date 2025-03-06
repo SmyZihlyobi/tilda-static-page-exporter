@@ -15,11 +15,11 @@ services:
       - "${TILDA_PORT}:${TILDA_PORT}"
     volumes:
       # Монтирование директорий для статических файлов
-      - ./static:/${TILDA_STATIC_PATH_PREFIX}
-      - ./static:/${TILDA_HTML_PATH}
-      - ./static/images:/${TILDA_IMAGES_PATH}
-      - ./static/css:/${TILDA_CSS_PATH}
-      - ./static/js:/${TILDA_JS_PATH}
+      - ${TILDA_STATIC_PATH_PREFIX}:/${TILDA_STATIC_PATH_PREFIX}
+      - ${TILDA_HTML_PATH}:/${TILDA_HTML_PATH}
+      - ${TILDA_IMAGES_PATH}:/${TILDA_IMAGES_PATH}
+      - ${TILDA_CSS_PATH}:/${TILDA_CSS_PATH}
+      - ${TILDA_JS_PATH}:/${TILDA_JS_PATH}
       # Если включен Git, монтируем .git директорию
       - .git:/app/.git:rw
     restart: unless-stopped
