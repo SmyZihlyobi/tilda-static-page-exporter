@@ -30,14 +30,24 @@ class Committer:
 
     def _store_credentials(self):
         """Сохраняем учетные данные в файл"""
-        credentials = f"https://{self.config.git_username}:{self.config.git_password}@{self._extract_domain()}"
+        try:
+            # Формируем URL с токеном для GitHub
+            credentials = f"https://{self.config.git_username}:{self.config.git_password}@github.com"
+            
+            creds_file = Path.home() / ".git-credentials"
+            with open(creds_file, "a") as f:
+                f.write(credentials + "\n")
 
-        creds_file = Path.home() / ".git-credentials"
-        with open(creds_file, "a") as f:
-            f.write(credentials + "\n")
-
-        # Устанавливаем безопасные права доступа
-        creds_file.chmod(0o600)
+            # Устанавливаем безопасные права доступа
+            creds_file.chmod(0o600)
+            
+            # Настраиваем Git для использования credentials
+            self._run_git_command("config", "--global", "credential.helper", "store")
+            # Отключаем SSL верификацию для отладки
+            #self._run_git_command("config", "--global", "http.sslVerify", "false")
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении учетных данных: {str(e)}")
+            raise
 
     def _extract_domain(self):
         """Извлекаем домен из URL репозитория"""
@@ -48,6 +58,9 @@ class Committer:
     def _set_remote(self):
         """Обновленная логика добавления remote"""
         try:
+            # Формируем URL с токеном
+            remote_url = f"https://{self.config.git_username}:{self.config.git_password}@github.com/{self.config.git_username}/TildaPageExport.git"
+            
             # Проверяем существует ли уже remote
             result = subprocess.run(
                 ["git", "-C", str(self.repo_path.absolute()), "remote"],
@@ -59,11 +72,18 @@ class Committer:
             remotes = result.stdout.strip().split('\n')
             
             if "export" in remotes:
-                # Если remote существует, просто обновляем URL
-                self._run_git_command("remote", "set-url", "export", self.config.git_remote_url)
+                # Если remote существует, обновляем URL
+                self._run_git_command("remote", "set-url", "export", remote_url)
             else:
                 # Если remote не существует, добавляем его
-                self._run_git_command("remote", "add", "export", self.config.git_remote_url)
+                self._run_git_command("remote", "add", "export", remote_url)
+            
+            # Пробуем получить изменения с remote
+            try:
+                self._run_git_command("fetch", "export")
+            except subprocess.CalledProcessError:
+                logger.warning("Не удалось получить изменения с remote, продолжаем работу")
+            
         except subprocess.CalledProcessError as e:
             logger.error(f"Ошибка при настройке remote: {e.stderr}")
             raise
@@ -124,7 +144,28 @@ class Committer:
 
     def _git_push(self):
         """Отправляет изменения в удаленный репозиторий"""
-        self._run_git_command("push", "-u", "export", "HEAD")
+        try:
+            # Сначала проверяем наличие коммитов
+            try:
+                self._run_git_command("rev-parse", "HEAD")
+            except subprocess.CalledProcessError:
+                logger.info("HEAD не найден, создаем начальный коммит")
+                self._run_git_command("add", "-A")
+                self._run_git_command("commit", "-m", "Initial commit", "--allow-empty")
+            
+            # Пробуем отправить изменения
+            try:
+                self._run_git_command("push", "-u", "export", "HEAD")
+            except subprocess.CalledProcessError as e:
+                if "rejected" in str(e.stderr):
+                    # Если push отклонен, пробуем сделать force push
+                    logger.warning("Push отклонен, пробуем force push")
+                    self._run_git_command("push", "-u", "export", "HEAD", "--force")
+                else:
+                    raise
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Ошибка при push: {e.stderr}")
+            raise
 
     def _run_git_command(self, *args):
         """Универсальный метод выполнения Git команд"""
