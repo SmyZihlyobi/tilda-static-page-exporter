@@ -12,10 +12,10 @@ services:
       - "${TILDA_PORT}:${TILDA_PORT}"
     volumes:
       # Монтируем директории для статических файлов с правильными путями
-      - ./${TILDA_HTML_PATH}:/app/${TILDA_HTML_PATH}
-      - ./${TILDA_IMAGES_PATH}:/app/${TILDA_IMAGES_PATH}
-      - ./${TILDA_CSS_PATH}:/app/${TILDA_CSS_PATH}
-      - ./${TILDA_JS_PATH}:/app/${TILDA_JS_PATH}
+      - ${TILDA_HTML_PATH}:/app/${TILDA_HTML_PATH}
+      - ${TILDA_IMAGES_PATH}:/app/${TILDA_IMAGES_PATH}
+      - ${TILDA_CSS_PATH}:/app/${TILDA_CSS_PATH}
+      - ${TILDA_JS_PATH}:/app/${TILDA_JS_PATH}
       # Если включен Git, монтируем .git директорию
       - .git:/app/.git:rw
     environment:
