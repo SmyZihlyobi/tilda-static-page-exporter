@@ -33,10 +33,11 @@ async def lifespan(app: FastAPI):
         # Создаем коммит при старте
         try:
             if config.push_to_git:
-                logger.info("Создаем коммит при старте сервера")
-                committer = Committer(config)
-                committer.commit_changes("Автоматический коммит при старте сервера")
-                logger.info("Коммит при старте создан успешно")
+                logger.info("Git push отключен")
+                # logger.info("Создаем коммит при старте сервера")
+                # committer = Committer(config)
+                # committer.commit_changes("Автоматический коммит при старте сервера")
+                # logger.info("Коммит при старте создан успешно")
         except Exception as e:
             logger.error(f"Ошибка при создании коммита: {str(e)}")
             # Продолжаем работу даже если коммит не удался
@@ -80,11 +81,12 @@ async def process_webhook_data(projectid: str, pageid: Optional[str], published:
         
         # Создаем коммит только если включен push_to_git
         if config.push_to_git:
-            current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            commit_message = f"Автоматическое обновление от Tilda {current_date}"
-            committer = Committer(config)
-            committer.commit_changes(commit_message)
-            logger.info("Git push выполнен успешно")
+            logger.info("Git push отключен")
+            # current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # commit_message = f"Автоматическое обновление от Tilda {current_date}"
+            # committer = Committer(config)
+            # committer.commit_changes(commit_message)
+            # logger.info("Git push выполнен успешно")
         else:
             logger.info("Git push пропущен (PUSH_TO_GIT=false)")
         
@@ -96,9 +98,10 @@ async def export_project():
     try:
         logger.info(f"Начало экспорта файлов")
         if config.push_to_git:
-            committer = Committer(config)
-            committer.commit_changes()
-            logger.info("Git push выполнен успешно")
+            logger.info("Git push отключен")
+            # committer = Committer(config)
+            # committer.commit_changes()
+            # logger.info("Git push выполнен успешно")
         else:
             logger.info("Git push пропущен (PUSH_TO_GIT=false)")
         logger.info(f"Экспорт завершен успешно")
