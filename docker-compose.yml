@@ -3,9 +3,6 @@ services:
     build: .
     env_file:
       - .env
-    environment:
-      - GIT_CONFIG_NAME=${GIT_CONFIG_NAME:-Tilda Exporter}
-      - GIT_CONFIG_EMAIL=${GIT_CONFIG_EMAIL:-tilda-exporter@example.com}
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -14,14 +11,19 @@ services:
     ports:
       - "${TILDA_PORT}:${TILDA_PORT}"
     volumes:
-      # Монтирование директорий для статических файлов
-      - ${TILDA_STATIC_PATH_PREFIX}:/${TILDA_STATIC_PATH_PREFIX}
-      - ${TILDA_HTML_PATH}:/${TILDA_HTML_PATH}
-      - ${TILDA_IMAGES_PATH}:/${TILDA_IMAGES_PATH}
-      - ${TILDA_CSS_PATH}:/${TILDA_CSS_PATH}
-      - ${TILDA_JS_PATH}:/${TILDA_JS_PATH}
+      # Монтируем директории для статических файлов с правильными путями
+      - ./${TILDA_HTML_PATH}:/app/${TILDA_HTML_PATH}
+      - ./${TILDA_IMAGES_PATH}:/app/${TILDA_IMAGES_PATH}
+      - ./${TILDA_CSS_PATH}:/app/${TILDA_CSS_PATH}
+      - ./${TILDA_JS_PATH}:/app/${TILDA_JS_PATH}
       # Если включен Git, монтируем .git директорию
       - .git:/app/.git:rw
+    environment:
+      - GIT_CONFIG_NAME=${GIT_CONFIG_NAME}
+      - GIT_CONFIG_EMAIL=${GIT_CONFIG_EMAIL}
+      # Добавляем глобальную конфигурацию Git
+      - GIT_GLOBAL_CONFIG_NAME=${GIT_CONFIG_NAME}
+      - GIT_GLOBAL_CONFIG_EMAIL=${GIT_CONFIG_EMAIL}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "https://static.tildacdn.com"]
