@@ -68,11 +68,11 @@ TILDA_HOST="0.0.0.0"     # Host to bind the server
 TILDA_PORT=8000          # Port to bind the server
 
 # File storage paths
-TILDA_STATIC_PATH_PREFIX=static/  # Prefix path for static files
-TILDA_HTML_PATH=static/           # Path for HTML files
-TILDA_IMAGES_PATH=static/images/  # Path for images
-TILDA_CSS_PATH=static/css/        # Path for CSS files
-TILDA_JS_PATH=static/js/          # Path for JavaScript files
+TILDA_STATIC_PATH_PREFIX=/static/  # Prefix path for static files
+TILDA_HTML_PATH=/static/           # Path for HTML files
+TILDA_IMAGES_PATH=/static/images/  # Path for images
+TILDA_CSS_PATH=/static/css/        # Path for CSS files
+TILDA_JS_PATH=/static/js/          # Path for JavaScript files
 
 # Git settings (optional)
 PUSH_TO_GIT=false                 # Enable/disable automatic Git push
