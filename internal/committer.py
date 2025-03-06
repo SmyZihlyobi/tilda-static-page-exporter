@@ -69,25 +69,20 @@ class Committer:
             raise
 
     def _init_repository(self):
-        """Инициализирует репозиторий если он отсутствует и настраивает параметры Git"""
+        """Инициализирует репозиторий если он отсутствует"""
         try:
             git_dir = self.repo_path / ".git"
             if not git_dir.exists():
                 logger.info(f"Initializing new Git repository in {self.repo_path}")
                 self._run_git_command("init")
+                # Настраиваем локальные параметры Git
+                self._run_git_command("config", "user.name", self.config.git_config_name)
+                self._run_git_command("config", "user.email", self.config.git_config_email)
                 # Создаем начальный коммит
                 self._run_git_command("add", "-A")
                 self._run_git_command("commit", "-m", "Initial commit", "--allow-empty")
-            
-            # Всегда настраиваем локальные параметры Git, даже если репозиторий уже существует
-            logger.info(f"Configuring Git user settings for {self.config.git_config_name}")
-            self._run_git_command("config", "user.name", self.config.git_config_name)
-            self._run_git_command("config", "user.email", self.config.git_config_email)
         except subprocess.CalledProcessError as e:
-            stderr_str = e.stderr
-            if isinstance(e.stderr, bytes):
-                stderr_str = e.stderr.decode('utf-8', errors='replace')
-            logger.error(f"Ошибка при инициализации репозитория: {stderr_str}")
+            logger.error(f"Ошибка при инициализации репозитория: {e.stderr}")
             raise
 
     def commit_changes(self, message: str = "Auto-commit from Tilda exporter"):
@@ -114,26 +109,12 @@ class Committer:
         try:
             self._run_git_command("commit", "-m", message, "--allow-empty")
         except subprocess.CalledProcessError as e:
-            # Проверяем, содержит ли сообщение об ошибке "nothing to commit"
-            # Преобразуем stderr в строку, если это байты
-            stderr_str = e.stderr
-            if isinstance(e.stderr, bytes):
-                stderr_str = e.stderr.decode('utf-8', errors='replace')
-                
-            if "nothing to commit" not in stderr_str:
-                logger.error(f"Git command failed: {stderr_str}")
+            if b"nothing to commit" not in e.stderr:
                 raise
 
     def _git_push(self):
         """Отправляет изменения в удаленный репозиторий"""
-        try:
-            self._run_git_command("push", "-u", "export", "HEAD")
-        except subprocess.CalledProcessError as e:
-            stderr_str = e.stderr
-            if isinstance(e.stderr, bytes):
-                stderr_str = e.stderr.decode('utf-8', errors='replace')
-            logger.error(f"Ошибка при выполнении git push: {stderr_str}")
-            raise
+        self._run_git_command("push", "-u", "export", "HEAD")
 
     def _run_git_command(self, *args):
         """Универсальный метод выполнения Git команд"""
@@ -150,10 +131,7 @@ class Committer:
             logger.debug(f"Output: {result.stdout}")
             return result
         except subprocess.CalledProcessError as e:
-            stderr_str = e.stderr
-            if isinstance(e.stderr, bytes):
-                stderr_str = e.stderr.decode('utf-8', errors='replace')
-            logger.error(f"Git command failed: {stderr_str}")
+            logger.error(f"Git command failed: {e.stderr}")
             raise
 
 
