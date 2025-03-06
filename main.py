@@ -29,6 +29,16 @@ async def lifespan(app: FastAPI):
         logger.info("Выполняем начальный экспорт проекта")
         await exporter.extract_project(config.project_id)
         logger.info("Начальный экспорт завершен успешно")
+        
+        # Создаем коммит и пушим изменения при старте
+        if config.push_to_git:
+            logger.info("Выполняем автоматический коммит и пуш изменений при старте")
+            committer = Committer(config)
+            commit_message = "Автоматический коммит при старте сервера"
+            committer.commit_changes(commit_message)
+            logger.info("Git push при старте выполнен успешно")
+        else:
+            logger.info("Git push при старте пропущен (PUSH_TO_GIT=false)")
     except Exception as e:
         logger.error(f"Ошибка при начальном экспорте: {e}", exc_info=True)
         raise
