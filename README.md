@@ -85,7 +85,7 @@ GIT_CONFIG_EMAIL="tilda-exporter@example.com"  # Git config email
 
 ## Limitations
 1. The script supports only one Tilda project at a time.
-2. Automatic Git synchronization is currently disabled by default.
+2. Automatic Git synchronization is currently disabled (skill issue).
 3. A Tilda Business account with API access is required for operation.
 
 # TODO
